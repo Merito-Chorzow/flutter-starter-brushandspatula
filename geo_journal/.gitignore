@@ -1,0 +1,12 @@
+.dart_tool/
+.packages
+.pub/
+.pub-cache/
+build/
+.flutter-plugins
+.flutter-plugins-dependencies
+.metadata
+.vscode/
+.idea/
+*.iml
+.DS_Store
