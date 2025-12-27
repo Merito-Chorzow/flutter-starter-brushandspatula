@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geo_journal/pages/user_posts_page.dart';
 import 'package:geolocator/geolocator.dart';
 
 class LocationPage extends StatefulWidget {
@@ -13,51 +14,44 @@ class _LocationPageState extends State<LocationPage> {
   String? _error;
 
   Future<void> setLocationByGPSData() async {
-  setState(() {
-    _error = null;
-  });
-
-  try {
-    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) {
-      setState(() {
-        _error = 'Location services are disabled...';
-      });
-      return;
-    }
-
-    var permission = await Geolocator.checkPermission();
-
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-
-    if (permission == LocationPermission.denied) {
-      setState(() {
-        _error = 'Permission denied...';
-      });
-      return;
-    }
-
-    if (permission == LocationPermission.deniedForever) {
-      setState(() {
-        _error = 'Permission denied...';
-      });
-      return;
-    }
-
-    final position = await Geolocator.getCurrentPosition();
-
     setState(() {
-      _position = position;
+      _error = null;
     });
-  } catch (e) {
-    setState(() {
-      _error = e.toString();
-    });
+
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) {
+        setState(() {
+          _error = 'Location services are disabled...';
+        });
+        return;
+      }
+
+      var permission = await Geolocator.checkPermission();
+
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        setState(() {
+          _error = 'Permission denied...';
+        });
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition();
+
+      setState(() {
+        _position = position;
+      });
+    } catch (e) {
+      setState(() {
+        _error = e.toString();
+      });
+    }
   }
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -68,14 +62,26 @@ class _LocationPageState extends State<LocationPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              _error != null ? 'Error: $_error'
-              : _position == null
-                  ? 'No location found :('
-                  : 'Lat: ${_position!.latitude}\n Lon: ${_position!.longitude}',
+              _error != null
+                  ? 'Error: $_error'
+                  : _position == null
+                      ? 'No location found :('
+                      : 'Lat: ${_position!.latitude}\nLon: ${_position!.longitude}',
             ),
             ElevatedButton(
               onPressed: setLocationByGPSData,
               child: const Text('Get current location'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const UserPostsPage(),
+                  ),
+                );
+              },
+              child: const Text('See your posts'),
             ),
           ],
         ),
