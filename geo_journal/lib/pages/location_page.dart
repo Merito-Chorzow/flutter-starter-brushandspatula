@@ -10,14 +10,54 @@ class LocationPage extends StatefulWidget {
 
 class _LocationPageState extends State<LocationPage> {
   Position? _position;
+  String? _error;
 
   Future<void> setLocationByGPSData() async {
+  setState(() {
+    _error = null;
+  });
+
+  try {
+    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      setState(() {
+        _error = 'Location services are disabled...';
+      });
+      return;
+    }
+
+    var permission = await Geolocator.checkPermission();
+
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+    }
+
+    if (permission == LocationPermission.denied) {
+      setState(() {
+        _error = 'Permission denied...';
+      });
+      return;
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      setState(() {
+        _error = 'Permission denied...';
+      });
+      return;
+    }
+
     final position = await Geolocator.getCurrentPosition();
 
     setState(() {
       _position = position;
     });
+  } catch (e) {
+    setState(() {
+      _error = e.toString();
+    });
   }
+}
+
 
   @override
   Widget build(BuildContext context) {
@@ -28,9 +68,10 @@ class _LocationPageState extends State<LocationPage> {
           mainAxisSize: MainAxisSize.min,
           children: [
             Text(
-              _position == null
-              ? 'No location found :('
-              :'Lat: ${_position!.latitude}\n Lon: ${_position!.longitude}'
+              _error != null ? 'Error: $_error'
+              : _position == null
+                  ? 'No location found :('
+                  : 'Lat: ${_position!.latitude}\n Lon: ${_position!.longitude}',
             ),
             ElevatedButton(
               onPressed: setLocationByGPSData,
@@ -42,4 +83,3 @@ class _LocationPageState extends State<LocationPage> {
     );
   }
 }
-// DEBUG_CHANGE_1766859472
