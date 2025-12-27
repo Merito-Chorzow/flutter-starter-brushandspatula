@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:geo_journal/pages/user_posts_page.dart';
 import 'package:geolocator/geolocator.dart';
+import 'user_posts_page.dart';
 
 class LocationPage extends StatefulWidget {
   const LocationPage({super.key});
@@ -22,7 +22,7 @@ class _LocationPageState extends State<LocationPage> {
       final serviceEnabled = await Geolocator.isLocationServiceEnabled();
       if (!serviceEnabled) {
         setState(() {
-          _error = 'Location services are disabled...';
+          _error = 'Location services are disabled';
         });
         return;
       }
@@ -36,7 +36,7 @@ class _LocationPageState extends State<LocationPage> {
       if (permission == LocationPermission.denied ||
           permission == LocationPermission.deniedForever) {
         setState(() {
-          _error = 'Permission denied...';
+          _error = 'Permission denied';
         });
         return;
       }
@@ -65,22 +65,30 @@ class _LocationPageState extends State<LocationPage> {
               _error != null
                   ? 'Error: $_error'
                   : _position == null
-                      ? 'No location found :('
+                      ? 'No location found'
                       : 'Lat: ${_position!.latitude}\nLon: ${_position!.longitude}',
+              textAlign: TextAlign.center,
             ),
+            const SizedBox(height: 12),
             ElevatedButton(
               onPressed: setLocationByGPSData,
               child: const Text('Get current location'),
             ),
+            const SizedBox(height: 12),
             ElevatedButton(
-              onPressed: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => const UserPostsPage(),
-                  ),
-                );
-              },
+              onPressed: _position == null
+                  ? null
+                  : () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => UserPostsPage(
+                            latitude: _position!.latitude,
+                            longitude: _position!.longitude,
+                          ),
+                        ),
+                      );
+                    },
               child: const Text('See your posts'),
             ),
           ],
