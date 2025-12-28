@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:geo_journal/georeverse_api.dart';
 import '../models/user_post.dart';
 
 class UserPostsPage extends StatefulWidget {
@@ -17,6 +18,7 @@ class UserPostsPage extends StatefulWidget {
 
 class _UserPostsPageState extends State<UserPostsPage> {
   final List<UserPost> _posts = [];
+  final _reverseEndpoint = GeoreverseAPI();
 
   void _addPost() {
     final titleController = TextEditingController();
@@ -45,8 +47,19 @@ class _UserPostsPageState extends State<UserPostsPage> {
             child: const Text('Cancel'),
           ),
           ElevatedButton(
-            onPressed: () {
+            onPressed: () async {
               if (titleController.text.isEmpty) return;
+
+              String placeName;
+
+              try {
+                placeName = await _reverseEndpoint.getNameByCoordinates(
+                  lat: widget.latitude,
+                  lon: widget.longitude,
+                );
+              } catch (e) {
+                placeName = 'Unknown name';
+              }
 
               setState(() {
                 _posts.add(
@@ -55,6 +68,7 @@ class _UserPostsPageState extends State<UserPostsPage> {
                     description: descController.text,
                     latitude: widget.latitude,
                     longitude: widget.longitude,
+                    placeName: placeName,
                   ),
                 );
               });
@@ -85,7 +99,7 @@ class _UserPostsPageState extends State<UserPostsPage> {
                 return ListTile(
                   title: Text(post.title),
                   subtitle: Text(
-                    '${post.description}\nLatitude: ${post.latitude}, Longitude: ${post.longitude}',
+                    '${post.description}\nLatitude: ${post.latitude}\n, Longitude: ${post.longitude}\n, Place name: ${post.placeName}\n',
                   ),
                 );
               },
